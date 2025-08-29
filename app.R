@@ -5,7 +5,8 @@
 # Purpose: This app was developed in order to viz data from general segmented
 # data with QuPath.
 # Instructions:
-# Step 1 - source file (Cmnd + Shift + Enter)
+
+# Source file (Cmnd + Shift + Enter)
 # Run app by simply entering "runApp('.')" into the console
 
 # info on shiny plots: https://shiny.posit.co/r/articles/build/selecting-rows-of-data/
@@ -14,15 +15,14 @@ library(shiny)
 library(data.table)
 library(ggplot2)
 library(plotly)
-# library(tidyverse)
 
-ionpath.colors <- c(
+app.colors <- c(
   "light blue" = "#0f7d1cff",
   "vivid blue" = "#5fdf90ff",
   "dark blue" = "#0c7c53ff",
   "midnight blue" = "#0c462cff"
 )
-ionpath.Ex.colors <- c(
+app.Ex.colors <- c(
   "light green 4" = "#5bc076ff",
   "light white warm" = "#ffffffff"
 )
@@ -34,7 +34,7 @@ ui <- fluidPage(
   tags$head(
     # Note the wrapping of the string in HTML()
     # below tags$sytle enable some modifying of the shiny styling
-    # below I updated the font to Ionpath's BrandGuidlines_V2 standard
+    # below I updated the font
     tags$style(HTML("
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
         body {
@@ -57,11 +57,11 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins  ----
     sidebarLayout(
         sidebarPanel(
-          img(src = "logo.png"),  # sidebar logo
-          
+          ## logo ----          
+          # img(src = "logo.png"),  # sidebar logo
+
           shinyjs::useShinyjs(), # to gray out color box with density
-          ## Ionpath logo ----
-          # tags$img(src = "logo.png", width: "200px"),  # sidebar logo
+          
           ## input file -----
           fileInput("file", "Select .csv file", accept = ".csv"),
           
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
-          color = ionpath.colors["vivid blue"]) + # new color of cells that are highlighted
+          color = app.colors["vivid blue"]) + # new color of cells that are highlighted
         labs(title = "Overlaid single-cell expression") + 
         expression_color_scale
     }else{ # else plotting density of data points
@@ -222,7 +222,7 @@ server <- function(input, output, session) {
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
-          color = ionpath.colors["vivid blue"]) + # new color of cells that are highlighted
+          color = app.colors["vivid blue"]) + # new color of cells that are highlighted
         labs(title = "Cell density plot", fill = "Cells per contour")
     }
   })# biaxial ggplot end
@@ -334,8 +334,8 @@ server <- function(input, output, session) {
         size = 2,
         shape = 21,
         alpha= 0.75, 
-        color = ionpath.Ex.colors["light white warm"],
-        fill = ionpath.Ex.colors["light green 4"]) + # new color of cells that are highlighted
+        color = app.Ex.colors["light white warm"],
+        fill = app.Ex.colors["light green 4"]) + # new color of cells that are highlighted
       theme_minimal() + # theme
       facet_wrap(~get(input$group)) +
       scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
