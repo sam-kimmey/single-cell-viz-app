@@ -311,9 +311,10 @@ server <- function(input, output, session) {
   output$gateCoords <- renderPrint({
     req(data(), input$column_X, input$column_Y)
     df <- brushedPoints(data(), input$plot1_brush, allRows = F)
-    print("Count of cells in gate, for each slide.type:")
+    print(noquote(paste( "Total cells in gate:", nrow(df))))
+    print(noquote("Count of cells in gate, for each slide.type:"))
     print(table(df$slide.type))
-    print(paste("Total cells in gate:", nrow(df)))
+    # print(noquote(paste("Total cells in gate:", nrow(df))))
   })# displays data table
   
   ### biaxial2 ggplot (bottom) ---------------
