@@ -99,7 +99,8 @@ ui <- fluidPage(
         mainPanel(
            plotOutput("biAxial1", brush = "plot1_brush", 
                       dblclick = "plot1_dblclick"), # brush object
-           plotOutput("biAxial2"),
+           plotOutput("biAxial2", width = "800px", height = "1000px"), # can modify width and height depending on facet to group on lower plot
+           # set to: plotOutput("biAxial2", width = "800px", height = "1000px") - in order to better view lower plot with multiple rows
            # tableOutput("data")
            )
         )
@@ -337,7 +338,7 @@ server <- function(input, output, session) {
         color = app.Ex.colors["light white warm"],
         fill = app.Ex.colors["light green 4"]) + # new color of cells that are highlighted
       theme_minimal() + # theme
-      facet_wrap(~get(input$group)) +
+      facet_wrap(~get(input$group), ncol = 2, ) +
       scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
       labs(title = paste("Cell centroid biaxial")) # biaxial plot
   })
