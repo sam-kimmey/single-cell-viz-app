@@ -52,7 +52,7 @@ ui <- fluidPage(
         }"))
   ),
     ## Application title ----
-    titlePanel("MIBIviz: An interactive single-cell segmentation map and expression visualization tool"),
+    titlePanel("MIBIviz2: An interactive single-cell segmentation map and expression visualization tool"),
     
     # Sidebar with a slider input for number of bins  ----
     sidebarLayout(
