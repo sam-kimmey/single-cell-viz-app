@@ -88,7 +88,8 @@ ui <- fluidPage(
           selectInput("group", "Group:", 
                         c("slide view" = "slide.type",
                           "tile ROI view" = "tile.ROI",
-                          "MIBIscope view" = "MIBIscope"
+                          "MIBIscope view" = "MIBIscope",
+                          "Slide with ROI view" = "slide.with.ROI"
                           )),
           ## text output -----
           verbatimTextOutput("gateCoords"),
@@ -313,9 +314,10 @@ server <- function(input, output, session) {
     req(data(), input$column_X, input$column_Y)
     df <- brushedPoints(data(), input$plot1_brush, allRows = F)
     print(noquote(paste( "Total cells in gate:", nrow(df))))
-    print(noquote("Count of cells in gate, for each slide.type:"))
-    print(table(df$slide.type))
-    # print(noquote(paste("Total cells in gate:", nrow(df))))
+
+    print(noquote("Count of cells in gate, for each condition:"))
+    print(table(df$sample.Group))
+    
   })# displays data table
   
   ### biaxial2 ggplot (bottom) ---------------
