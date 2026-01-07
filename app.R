@@ -52,7 +52,7 @@ ui <- fluidPage(
         }"))
   ),
     ## Application title ----
-    titlePanel("MIBIviz: An interactive spatial single-cell data visualization tool"),
+    titlePanel("CELLviz: An interactive spatial single-cell data visualization tool"),
     
     # Sidebar with a slider input for number of bins  ----
     sidebarLayout(
@@ -317,6 +317,10 @@ server <- function(input, output, session) {
 
     print(noquote("Count of cells in gate, for each condition:"))
     print(table(df$sample.Group))
+
+    ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT
+    print(noquote("Count of cells in metacluster:"))
+    print(table(df$metaCluster))
     
   })# displays data table
   
