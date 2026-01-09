@@ -404,6 +404,7 @@ server <- function(input, output, session) {
 shinyApp(ui = secure_app(ui,
   tags_top = tags$div(
     # tags$img(src = ),
-    tags$h3("CELLviz Login")
+    tags$h3("CELLviz"),
+    tags$h6("Developed by Oregon Physics")
   )
 ), server = server)
