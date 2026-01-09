@@ -11,6 +11,8 @@
 
 # info on shiny plots: https://shiny.posit.co/r/articles/build/selecting-rows-of-data/
 
+# rsconnect::writeManifest(appPrimaryDoc = "app.R") # run this single line of code to update the manifest.json file after new lib added, otherwise comment out.
+
 library(shiny)
 library(data.table)
 library(ggplot2)
