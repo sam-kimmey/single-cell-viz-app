@@ -15,6 +15,7 @@ library(shiny)
 library(data.table)
 library(ggplot2)
 library(plotly)
+library(shinymanager)
 
 app.colors <- c(
   "light blue" = "#0f7d1cff",
@@ -107,9 +108,40 @@ ui <- fluidPage(
         )
     )
 
+make_creds <- function(){
+  users_raw <- Sys.getenv("APP_ALLOWED_USERS", "")
+  shared_pw <- Sys.getenv("APP_SHARED_PWD", "")
+
+  users <- trimws(strsplit(users_raw, ",")[[1]])
+  users <- users[nzchar(users)]
+
+  if (length(users) == 0 || shared_pw == ""){
+    stop("Auth Vars not set")
+  }
+
+  ### User Cred ---------------
+  data.frame(
+    user = users,
+    password = rep(shared_pw, length(users)),
+    stringsAsFactors = FALSE
+  )
+}
+
 #Server ----- 
 # Define server logic required to draw a biaxial plot
 server <- function(input, output, session) {
+  
+
+
+  options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
+
+  user_creds <- make_creds()
+
+  ### Login check ---------------
+  res_auth <- secure_server(
+    check_credentials = check_credentials(user_creds)
+  )
+  
   options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import
   
   # reactivate value to store data.table
@@ -367,4 +399,9 @@ server <- function(input, output, session) {
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = secure_app(ui,
+  tags_top = tags$div(
+    # tags$img(src = ),
+    tags$h3("CELLviz Login")
+  )
+), server = server)
