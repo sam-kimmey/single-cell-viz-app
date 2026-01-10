@@ -80,6 +80,7 @@ ui <- fluidPage(
   }
   ")),
 
+  # commented out below
   # div(
   #   id = "top_right_image",
   #   tags$a(
@@ -177,15 +178,14 @@ make_creds <- function(){
 server <- function(input, output, session) {
   
 
-
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  # user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
+  user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    # check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
+    check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
 
   )
   
