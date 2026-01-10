@@ -180,12 +180,12 @@ server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
+  # user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
+    # check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
 
   )
   
@@ -198,6 +198,7 @@ server <- function(input, output, session) {
   ### input file ---------------
   observeEvent(input$file, {
     req(input$file)
+    print(input$file$datapath)
     dt <- fread(input$file$datapath)
     
     # check for gateAnnotation col, and add new col for if necessary
@@ -465,4 +466,4 @@ shinyApp(ui = secure_app(ui,
 ), server = server)
 
 # Run the application 
-# shinyApp(ui = ui, server = server) # UN COMMENT WHEN DONE WITH FONT
+shinyApp(ui = ui, server = server) # UN COMMENT WHEN DONE WITH FONT
