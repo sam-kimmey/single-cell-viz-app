@@ -80,7 +80,7 @@ ui <- fluidPage(
   }
   ")),
 
-  # commented out below
+  # commented out below TO RESTORE IMG
   # div(
   #   id = "top_right_image",
   #   tags$a(
@@ -180,12 +180,12 @@ server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  # user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
+  user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    # check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
+    check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
 
   )
   
@@ -452,6 +452,8 @@ shinyApp(ui = secure_app(ui,
 
     tags$h3("CELLviz"),
     tags$h6("Developed by Oregon Physics"),
+    
+    # COMMENT TO RESTORE IMG
     # tags$a(
     #   href = "https://www.oregon-physics.com", # The destination URL
     #   target = "_blank",
@@ -466,4 +468,4 @@ shinyApp(ui = secure_app(ui,
 ), server = server)
 
 # Run the application 
-shinyApp(ui = ui, server = server) # UN COMMENT WHEN DONE WITH FONT
+# shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
