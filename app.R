@@ -80,20 +80,19 @@ ui <- fluidPage(
   }
   ")),
 
-  div(
-    id = "top_right_image",
-    tags$a(
-      href = "https://www.oregon-physics.com", # The destination URL
-      target = "_blank",
-      tags$img(
-        src = "logo.png", 
-        height = "40px", 
-        width = "100px",
-        alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
-      )
-    )
-  )
-,
+  # div(
+  #   id = "top_right_image",
+  #   tags$a(
+  #     href = "https://www.oregon-physics.com", # The destination URL
+  #     target = "_blank",
+  #     tags$img(
+  #       src = "logo.png", 
+  #       height = "40px", 
+  #       width = "100px",
+  #       alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
+  #     )
+  #   )
+  # ),
 
     ## Application title ----
     titlePanel("CELLviz"),
@@ -181,12 +180,12 @@ server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
+  # user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
+    # check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
 
   )
   
@@ -452,16 +451,16 @@ shinyApp(ui = secure_app(ui,
 
     tags$h3("CELLviz"),
     tags$h6("Developed by Oregon Physics"),
-    tags$a(
-      href = "https://www.oregon-physics.com", # The destination URL
-      target = "_blank",
-      tags$img(
-        src = "logo.png", 
-        height = "40px", 
-        width = "100px",
-        alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
-      )
-    )
+    # tags$a(
+    #   href = "https://www.oregon-physics.com", # The destination URL
+    #   target = "_blank",
+    #   tags$img(
+    #     src = "logo.png", 
+    #     height = "40px", 
+    #     width = "100px",
+    #     alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
+    #   )
+    # )
   )
 ), server = server)
 
