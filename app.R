@@ -1,6 +1,6 @@
 #
 # Author: Sam Kimmey, PhD
-# Date: July 15, 2024
+# Create Date: July 15, 2024
 #
 # Purpose: This app was developed in order to viz data from general segmented
 # data with QuPath.
@@ -30,33 +30,77 @@ app.Ex.colors <- c(
   "light white warm" = "#ffffffff"
 )
 
+deploy_msg <- paste0("Last update: January 2026. Creator: Sam Kimmey")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui <- fluidPage(
+
+  absolutePanel(
+    fixed = TRUE,
+    bottom = 5,
+    left = 10,
+    width = 500,
+    height = 20,
+    tags$div(
+      p(deploy_msg),
+      style = "color: #aeaea0ff;font-size: 10px;"
+    )
+  ),
 
   tags$head(
     # Note the wrapping of the string in HTML()
     # below tags$sytle enable some modifying of the shiny styling
     # below I updated the font
     tags$style(HTML("
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
-        body {
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Rammetto+One&display=swap');        body {
         background-color: white;
         color: #0c7c53ff;
         }
         
         h2 {
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Rammetto One', sans-serif;
         font-weight: 700;
         }
+        h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 300;
+        }        
         
         .shiny-input-container {
         color: #474747;
         }"))
   ),
+
+  tags$style(HTML("
+  #top_right_image {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+  }
+  ")),
+
+  div(
+    id = "top_right_image",
+    tags$a(
+      href = "https://www.oregon-physics.com", # The destination URL
+      target = "_blank",
+      tags$img(
+        src = "logo.png", 
+        height = "40px", 
+        width = "100px",
+        alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
+      )
+    )
+  )
+,
+
     ## Application title ----
-    titlePanel("CELLviz: An interactive spatial single-cell data visualization tool"),
-    
+    titlePanel("CELLviz"),
+
+    # subtitle using h3
+    h3("an interactive spatial single-cell data visualization tool"),
+
     # Sidebar with a slider input for number of bins  ----
     sidebarLayout(
         sidebarPanel(
@@ -137,11 +181,13 @@ server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  user_creds <- make_creds()
+  user_creds <- make_creds() # UN COMMENT WHEN DONE WITH FONT
 
   ### Login check ---------------
   res_auth <- secure_server(
-    check_credentials = check_credentials(user_creds)
+
+    check_credentials = check_credentials(user_creds) # UN COMMENT WHEN DONE WITH FONT
+
   )
   
   options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import
@@ -403,8 +449,21 @@ server <- function(input, output, session) {
 # Run the application 
 shinyApp(ui = secure_app(ui,
   tags_top = tags$div(
-    # tags$img(src = ),
+
     tags$h3("CELLviz"),
-    tags$h6("Developed by Oregon Physics")
+    tags$h6("Developed by Oregon Physics"),
+    tags$a(
+      href = "https://www.oregon-physics.com", # The destination URL
+      target = "_blank",
+      tags$img(
+        src = "logo.png", 
+        height = "40px", 
+        width = "100px",
+        alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
+      )
+    )
   )
 ), server = server)
+
+# Run the application 
+# shinyApp(ui = ui, server = server) # UN COMMENT WHEN DONE WITH FONT
