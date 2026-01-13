@@ -148,7 +148,7 @@ ui <- fluidPage(
                           "tile ROI view" = "tile.ROI",
                           "MIBIscope view" = "MIBIscope",
                           "Slide with ROI view" = "slide.with.ROI",
-                          "Cell annotation view" = "SOM_R2_imm_metaclust_anno"
+                          "Cell annotation view" = "final_SOM_cluster_name"
                           )),
           ## text output -----
           verbatimTextOutput("gateCoords"),
