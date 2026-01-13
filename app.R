@@ -1,4 +1,3 @@
-#
 # Author: Sam Kimmey, PhD
 # Create Date: July 15, 2024
 
@@ -196,16 +195,15 @@ make_creds <- function(){
 #Server ----- 
 # Define server logic required to draw a biaxial plot
 server <- function(input, output, session) {
-  
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  # user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
+  user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    # check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
+    check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
 
   )
   
@@ -504,4 +502,4 @@ shinyApp(ui = secure_app(ui,
 ), server = server)
 
 # Run the application 
-shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
+# shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
