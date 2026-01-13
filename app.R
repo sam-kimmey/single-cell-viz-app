@@ -41,7 +41,7 @@ app.Ex.colors <- c(
   "light white warm" = "#ffffffff"
 )
 
-deploy_msg <- paste0("Last update: January 2026. Creator: Sam Kimmey")
+deploy_msg <- paste0("Last update: January 2026. Developed by Sam Kimmey")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui <- fluidPage(
@@ -76,7 +76,9 @@ ui <- fluidPage(
         font-family: 'Montserrat', sans-serif;
         font-weight: 300;
         }        
-        
+        h5 {
+        color: #000000ff;
+        }
         .shiny-input-container {
         color: #474747;
         }"))
@@ -150,15 +152,21 @@ ui <- fluidPage(
                           "Slide with ROI view" = "slide.with.ROI",
                           "Cell annotation view" = "final_SOM_cluster_name"
                           )),
+          downloadButton("download", class = "btn-block", label = "Download gate-annotated dataset as .csv"),
           ## text output -----
+          h5("Data information:"), # eval labeling printed section
+
           verbatimTextOutput("gateCoords"),
-          downloadButton("download", class = "btn-block", label = "Download gate-annotated dataset as .csv")
+          verbatimTextOutput("clickCoords")
           ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("biAxial1", brush = "plot1_brush", 
-                      dblclick = "plot1_dblclick"), # brush object
+           plotOutput("biAxial1", 
+           brush = "plot1_brush", 
+           dblclick = "plot1_dblclick",
+           click = "biax1_click"
+          ), # brush object
            plotOutput("biAxial2", width = "800px", height = "1000px"), # can modify width and height depending on facet to group on lower plot
            # set to: plotOutput("biAxial2", width = "800px", height = "1000px") - in order to better view lower plot with multiple rows
            # tableOutput("data")
@@ -192,12 +200,12 @@ server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
+  # user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
+    # check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
 
   )
   
@@ -416,6 +424,19 @@ server <- function(input, output, session) {
     ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT
     print(noquote("Count of cells in metacluster:"))
     print(table(df$metaCluster))
+
+  })# displays data table
+
+  ### displays selected cell info -----------
+  output$clickCoords <- renderPrint({
+
+    x_name <- input$column_X
+    y_name <- input$column_Y
+    req(input$biax1_click, input$column_X, input$column_Y)
+    print(noquote("Click coordinates for"))
+    print(noquote(paste("X:", x_name)))
+    print(noquote(paste("Y:", y_name)))
+    c(X = input$biax1_click$x, Y = input$biax1_click$y) # input$column_X input$column_Y
     
   })# displays data table
   
@@ -468,7 +489,7 @@ shinyApp(ui = secure_app(ui,
     tags$h3("CELLviz"),
     tags$h6("Developed by Oregon Physics"),
     
-    # COMMENT TO RESTORE IMG
+    # COMMENT TO RESTORE IMG - including photo seemed to slow down/lead to crash when loading data
     # tags$a(
     #   href = "https://www.oregon-physics.com", # The destination URL
     #   target = "_blank",
@@ -483,4 +504,4 @@ shinyApp(ui = secure_app(ui,
 ), server = server)
 
 # Run the application 
-# shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
+shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
