@@ -274,9 +274,12 @@ server <- function(input, output, session) {
       expression_color_scale = scale_color_viridis_c(option = "magma", direction = 1)
     }else{
       # color for non-numerical column - i.e. factor colum (like slide type, MIBIscope, etc)
-      expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1)
+      # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1)
       # expression_color_scale = paletteer::scale_colour_paletteer_d("nationalparkcolors::Acadia") # alt pallet
       # this particular paletteer (above) includes some white - but this line is functional and can be the basis for different paletteer pallets
+      
+      expression_color_scale = scale_color_viridis_d(option = "plasma")
+      
     }
     
     ### ggplot obj -----
