@@ -1,10 +1,21 @@
 #
 # Author: Sam Kimmey, PhD
 # Create Date: July 15, 2024
-#
-# Purpose: This app was developed in order to viz data from general segmented
-# data with QuPath.
-# Instructions:
+
+# Purpose: This app was developed in order to viz single-cell datasets that are derived from segmented imaging data 
+# and subsequent count extraction, followed by any necessary data transformation, normalization, cluster analysis, etc.
+
+# This tool expects single-cell data to be saved in a .CSV format and in a file path that is on the computer used to 
+# access this tool. 
+# 
+# Each columm in the loaded file can be visualized on the top biaxial plot. The user can select density, or to overlay a numeric or
+# grouping column. Data can be gated to select, and those selected data points will be highlighted in cell centroid biaxial plot below.
+# Qualities of the selected data points are displayed on the left. Double-clicking within the selected cell square will zoom into that region.
+# Selected cells can be further annotated by clicking "Gate name" and typing in a name for the gate. A new column will be added to the loaded 
+# dataset that can be saved by clicking "Download gate-annotated dataset as .csv" and chosing a name and file save location.
+# 
+# The Group setting can be used to change the facet-parameter for the centroid biaxial, allowing multiple ROIs or other grouping 
+# variables to display multiple spatial plots.
 
 # Source file (Cmnd + Shift + Enter)
 # Run app by simply entering "runApp('.')" into the console
@@ -136,7 +147,8 @@ ui <- fluidPage(
                         c("slide view" = "slide.type",
                           "tile ROI view" = "tile.ROI",
                           "MIBIscope view" = "MIBIscope",
-                          "Slide with ROI view" = "slide.with.ROI"
+                          "Slide with ROI view" = "slide.with.ROI",
+                          "Cell annotation view" = "SOM_R2_imm_metaclust_anno"
                           )),
           ## text output -----
           verbatimTextOutput("gateCoords"),
