@@ -81,18 +81,18 @@ ui <- fluidPage(
         .shiny-input-container {
         color: #474747;
         }"))
-  ),
+    ),
 
-  tags$style(HTML("
-  #top_right_image {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-  }
-  ")),
+    tags$style(HTML("
+    #top_right_image {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+    }
+    ")),
 
-  # commented out below TO RESTORE IMG
+  # commented out below TO RESTORE IMG in upper right of plot page
   # div(
   #   id = "top_right_image",
   #   tags$a(
@@ -207,7 +207,7 @@ server <- function(input, output, session) {
 
   )
   
-  options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import
+  options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import - do not adjust
   
   # reactivate value to store data.table
   data <- reactiveVal(NULL)
@@ -226,7 +226,6 @@ server <- function(input, output, session) {
       dt[,gateAnnotation:="none"] # set to "none" instead of NA
     }
     data(dt)
-    # selected <- reactiveVal(rep(FALSE, nrow(data()))) # added to try and iteritively add to selected cells
   })
   
   # X axis - default to centroid axis
@@ -234,7 +233,6 @@ server <- function(input, output, session) {
   output$columnSelectUI_X <- renderUI({
     req(data())
     selectInput("column_X", "Select X axis", choices = colnames(data()), 
-                # selected = "HLA_1A_B_C") # can use for quick viz - will need to comment out below line if using this one
                 selected = "Centroid.X.um")
   })# X axis
     
@@ -242,7 +240,6 @@ server <- function(input, output, session) {
   output$columnSelectUI_Y <- renderUI({
     req(data())
     selectInput("column_Y", "Select Y axis", choices = colnames(data()), 
-                # selected = "CD45") # can use for quick viz - will need to comment out below line if using this one
                 selected = "Centroid.Y.um") # switch back to centroid for default
   })# Y axis
   
@@ -280,11 +277,9 @@ server <- function(input, output, session) {
       expression_color_scale = scale_color_viridis_c(option = "magma", direction = 1)
     }else{
       # color for non-numerical column - i.e. factor colum (like slide type, MIBIscope, etc)
-      # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1)
-      # expression_color_scale = paletteer::scale_colour_paletteer_d("nationalparkcolors::Acadia") # alt pallet
-      # this particular paletteer (above) includes some white - but this line is functional and can be the basis for different paletteer pallets
+      # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1) # only has 8 colors
       
-      expression_color_scale = scale_color_viridis_d(option = "plasma")
+      expression_color_scale = scale_color_viridis_d(option = "plasma") # may want to update to better pallete, OK for now.
       
     }
     
@@ -321,7 +316,6 @@ server <- function(input, output, session) {
         geom_point(alpha= 0.25, color = "black", ) +
         geom_density2d() +
         geom_density_2d_filled(alpha = 0.25, contour_var = "count") + # need to rename legend
-        # geom_hex(bins = 70) +
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
@@ -358,7 +352,6 @@ server <- function(input, output, session) {
   ### reset colored points button ---------------
   # eliminates colored points
   observeEvent(input$exclude_reset, {
-    
     session$resetBrush("plot1_brush")
     # vals$keeprows <- rep(TRUE, nrow(data()))
     brush <<- NULL
@@ -404,8 +397,6 @@ server <- function(input, output, session) {
       print("length of selected cells:")
       print(length(ObjIDs))
       data()[data()$'cell_label' %in% ObjIDs, gateAnnotation:= l$name]
-      # session$resetBrush("plot1_brush")
-      # vals$keeprows <- rep(TRUE, nrow(data()))
       brush <<- NULL
     }
   })
@@ -418,14 +409,20 @@ server <- function(input, output, session) {
 
     print(noquote("Count of cells in gate, for each condition:"))
     print(table(df$sample.Group))
+    # print(colnames(data()))
 
-    ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT
+    ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT - TODO
     print(noquote("Count of cells in metacluster:"))
     print(table(df$metaCluster))
 
+    if("final_SOM_cluster_name" %in% colnames(data())){
+    print(noquote("Count of cells in cell phenotype group:"))
+    print(table(df$final_SOM_cluster_name))
+    }
+
   })# displays data table
 
-  ### displays selected cell info -----------
+  ### displays click data info -----------
   output$clickCoords <- renderPrint({
 
     x_name <- input$column_X
@@ -475,7 +472,6 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       fwrite(data(), file)
-      # vroom::vroom_write(tidied(), file)
     }
   )
 }
