@@ -433,7 +433,7 @@ server <- function(input, output, session) {
     print(noquote(paste("Y:", y_name)))
     c(X = input$biax1_click$x, Y = input$biax1_click$y) # input$column_X input$column_Y
     
-  })# displays data table
+  }, width = 50)# displays data table
   
   ### biaxial2 ggplot (bottom) ---------------
   output$biAxial2 <- renderPlot({
@@ -462,7 +462,7 @@ server <- function(input, output, session) {
       facet_wrap(~get(input$group)) +
       scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
       labs(title = paste("Cell centroid biaxial")) # biaxial plot
-  }, width = 50)
+  })
   
   # Download -------------------------------------------------------
   # the Download .csv button will download the dataset with added annotations to the "/Downloads/" directory
