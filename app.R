@@ -113,7 +113,7 @@ ui <- fluidPage(
     # subtitle using h3
     h3("an interactive spatial single-cell data visualization tool"),
 
-    # Sidebar with a slider input for number of bins  ----
+    # Sidebar with a inputs for plot ----
     sidebarLayout(
         sidebarPanel(
           ## logo ----          
@@ -192,18 +192,18 @@ make_creds <- function(){
   )
 }
 
-#Server ----- 
+# Server ----- 
 # Define server logic required to draw a biaxial plot
 server <- function(input, output, session) {
 
   options("shinymanager.pwd_failure_limit" = 5) # allows larger file size import
 
-  # user_creds <- make_creds() # COMMENT TO RESTORE LOGIN
+  # user_creds <- make_creds() # *** COMMENT TO RESTORE LOGIN ***
 
   ### Login check ---------------
   res_auth <- secure_server(
 
-    # check_credentials = check_credentials(user_creds) # COMMENT TO RESTORE LOGIN
+    # check_credentials = check_credentials(user_creds) # *** COMMENT TO RESTORE LOGIN ***
 
   )
   
@@ -420,7 +420,7 @@ server <- function(input, output, session) {
     print(table(df$final_SOM_cluster_name))
     }
 
-  })# displays data table
+  }, width = 50)# displays data table
 
   ### displays click data info -----------
   output$clickCoords <- renderPrint({
@@ -462,7 +462,7 @@ server <- function(input, output, session) {
       facet_wrap(~get(input$group)) +
       scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
       labs(title = paste("Cell centroid biaxial")) # biaxial plot
-  })
+  }, width = 50)
   
   # Download -------------------------------------------------------
   # the Download .csv button will download the dataset with added annotations to the "/Downloads/" directory
@@ -476,10 +476,12 @@ server <- function(input, output, session) {
   )
 }
 
-# Run the application 
-shinyApp(ui = secure_app(ui,
-  tags_top = tags$div(
+# Run App -------------------------------------------------------
 
+# Run the secure shiny app 
+shinyApp( 
+  ui = secure_app(ui,
+  tags_top = tags$div(
     tags$h3("CELLviz"),
     tags$h6("Developed by Oregon Physics"),
     
@@ -494,8 +496,9 @@ shinyApp(ui = secure_app(ui,
     #     alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
     #   )
     # )
+
   )
 ), server = server)
 
-# Run the application 
-shinyApp(ui = ui, server = server) # COMMENT TO RESTORE LOGIN
+# Run the application with no secure login
+shinyApp(ui = ui, server = server) # *** COMMENT out TO RESTORE LOGIN ***
