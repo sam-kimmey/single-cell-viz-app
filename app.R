@@ -153,7 +153,7 @@ ui <- fluidPage(
                           )),
           downloadButton("download", class = "btn-block", label = "Download gate-annotated dataset as .csv"),
           ## text output -----
-          h5("Data information:"), # eval labeling printed section
+          h5("Selected data information:"), # eval labeling printed section
 
           verbatimTextOutput("gateCoords"),
           verbatimTextOutput("clickCoords")
