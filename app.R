@@ -131,7 +131,7 @@ ui <- fluidPage(
             
           uiOutput("colorOverlaySelectUI"),
           
-          radioButtons("density", "Exp or Density:",
+          radioButtons("density", "Expression or Density:",
                        c("Expression" = "exp",
                          "Density" = "dens")),
           
@@ -407,17 +407,25 @@ server <- function(input, output, session) {
     df <- brushedPoints(data(), input$plot1_brush, allRows = F)
     print(noquote(paste( "Total cells in gate:", nrow(df))))
 
-    print(noquote("Count of cells in gate, for each condition:"))
+    print(noquote("For each condition:"))
     print(table(df$sample.Group))
     # print(colnames(data()))
 
     ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT - TODO
-    print(noquote("Count of cells in metacluster:"))
-    print(table(df$metaCluster))
+    # print(noquote("Count of cells in metaCluster_R1:"))
+    # print(table(df$metaCluster_R1))
 
     if("final_SOM_cluster_name" %in% colnames(data())){
-    print(noquote("Count of cells in cell phenotype group:"))
+    print(noquote("Count of cells in metacluster group:"))
     print(table(df$final_SOM_cluster_name))
+    }
+
+    if("final_name" %in% colnames(data())){
+    print(noquote("Percent of cells in final annotated grouping:"))      
+      final_counts <- table(df$final_name)
+      final_proportions <- prop.table(final_counts)
+      final_pcent <- final_proportions * 100
+      print(round(final_pcent, 2))
     }
 
   }, width = 50)# displays data table
