@@ -242,7 +242,7 @@ server <- function(input, output, session) {
     selectInput("column_Y", "Select Y axis", choices = colnames(data()), 
                 selected = "Centroid_Y_um") # switch back to centroid for default
   })# Y axis
-  
+  # TESTING
   ### choose color axis ---------------
   output$colorOverlaySelectUI <- renderUI({
     req(data())
