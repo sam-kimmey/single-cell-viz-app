@@ -233,14 +233,14 @@ server <- function(input, output, session) {
   output$columnSelectUI_X <- renderUI({
     req(data())
     selectInput("column_X", "Select X axis", choices = colnames(data()), 
-                selected = "Centroid_X_um")
+                selected = "centroid_X_um")
   })# X axis
     
   ### choose Y axis ---------------
   output$columnSelectUI_Y <- renderUI({
     req(data())
     selectInput("column_Y", "Select Y axis", choices = colnames(data()), 
-                selected = "Centroid_Y_um") # switch back to centroid for default
+                selected = "centroid_Y_um") # switch back to centroid for default
   })# Y axis
   # TESTING
   ### choose color axis ---------------
@@ -300,7 +300,7 @@ server <- function(input, output, session) {
     )
     
     # reverse centroid Y ordering to match expected orientation
-    if(input$column_Y == "Centroid.Y.um"){g = g + scale_y_reverse()}
+    if(input$column_Y == "centroid_Y_um"){g = g + scale_y_reverse()}
     
     if(isTRUE(colors)){ # if NOT plotting density
       g + 
@@ -450,8 +450,8 @@ server <- function(input, output, session) {
     rows.rand2 <- sample(nrow(data())) # randomized rows used for plotting
     ggplot(data()[rows.rand2,], 
            aes_string(
-             x = "Centroid_X_um", # X and Y entered in by drop down - updated to drop "." for underscore
-             y = "Centroid_Y_um")) + 
+             x = "centroid_X_um", # X and Y entered in by drop down - updated to drop "." for underscore
+             y = "centroid_Y_um")) + 
       geom_point(# mainplot style
         alpha= 0.5, 
         color = "black") + 
@@ -467,7 +467,7 @@ server <- function(input, output, session) {
         axis.text.x = element_blank(),  # Removes x-axis text labels
         axis.text.y = element_blank()
       ) +
-      facet_wrap(~get(input$group)) +
+      # facet_wrap(~get(input$group)) +
       scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
       labs(title = paste("Cell centroid biaxial")) # biaxial plot
   })
