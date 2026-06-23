@@ -450,7 +450,7 @@ server <- function(input, output, session) {
     rows.rand2 <- sample(nrow(data())) # randomized rows used for plotting
     ggplot(data()[rows.rand2,], 
            aes_string(
-             x = "Centroid_X_um", # X and Y entered in by drop down
+             x = "Centroid_X_um", # X and Y entered in by drop down - updated to drop "." for underscore
              y = "Centroid_Y_um")) + 
       geom_point(# mainplot style
         alpha= 0.5, 
