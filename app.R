@@ -233,14 +233,14 @@ server <- function(input, output, session) {
   output$columnSelectUI_X <- renderUI({
     req(data())
     selectInput("column_X", "Select X axis", choices = colnames(data()), 
-                selected = "Centroid.X.um")
+                selected = "Centroid_X_um")
   })# X axis
     
   ### choose Y axis ---------------
   output$columnSelectUI_Y <- renderUI({
     req(data())
     selectInput("column_Y", "Select Y axis", choices = colnames(data()), 
-                selected = "Centroid.Y.um") # switch back to centroid for default
+                selected = "Centroid_Y_um") # switch back to centroid for default
   })# Y axis
   
   ### choose color axis ---------------
@@ -450,8 +450,8 @@ server <- function(input, output, session) {
     rows.rand2 <- sample(nrow(data())) # randomized rows used for plotting
     ggplot(data()[rows.rand2,], 
            aes_string(
-             x = "Centroid.X.um", # X and Y entered in by drop down
-             y = "Centroid.Y.um")) + 
+             x = "Centroid_X_um", # X and Y entered in by drop down
+             y = "Centroid_Y_um")) + 
       geom_point(# mainplot style
         alpha= 0.5, 
         color = "black") + 
