@@ -40,7 +40,7 @@ app.Ex.colors <- c(
   "light white warm" = "#ffffffff"
 )
 
-deploy_msg <- paste0("Last update: January 2026. Developed by Sam Kimmey")
+deploy_msg <- paste0("Last update: June 2026. Developed by Sam Kimmey")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui <- fluidPage(
@@ -116,7 +116,7 @@ ui <- fluidPage(
       )
     )
   ),
-  
+
   div(
     id = "top_right_image_left",
     tags$a(
