@@ -92,14 +92,39 @@ ui <- fluidPage(
     }
     ")),
 
+    tags$style(HTML("
+    #top_right_image_left {
+      position: absolute;
+      top: 10px;
+      right: 120px;
+      z-index: 1000;
+    }
+    ")),
+
   # commented out below TO RESTORE IMG in upper right of plot page
   div(
     id = "top_right_image",
+    tags$a(
+      href = "https://mibiscope.com", # The destination URL
+      target = "_blank",
+      tags$img(
+        # src = "logo.png", 
+        src = "mibiscope_logo_dark.svg",
+        height = "40px", 
+        width = "100px",
+        alt = "MIBIscope Logo Link" #https://www.oregon-physics.com
+      )
+    )
+  ),
+  
+  div(
+    id = "top_right_image_left",
     tags$a(
       href = "https://www.oregon-physics.com", # The destination URL
       target = "_blank",
       tags$img(
         src = "logo.png", 
+        # src = "mibiscope_logo_dark.svg",
         height = "40px", 
         width = "100px",
         alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
