@@ -28,6 +28,9 @@ library(data.table)
 library(ggplot2)
 library(plotly)
 library(shinymanager)
+library(tidyverse)
+library(pals)
+library(paletteer)
 
 app.colors <- c(
   "light blue" = "#0f7d1cff",
@@ -40,7 +43,7 @@ app.Ex.colors <- c(
   "light white warm" = "#ffffffff"
 )
 
-deploy_msg <- paste0("Last update: June 2026. Developed by Sam Kimmey")
+deploy_msg <- paste0("Last update: June 2026. Developed by Sam Kimmey, Josh Kramer")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui <- fluidPage(
@@ -154,7 +157,11 @@ ui <- fluidPage(
             
           uiOutput("columnSelectUI_Y"),
             
-          uiOutput("colorOverlaySelectUI"),
+          uiOutput("colorOverlaySelectUItop"),
+
+          uiOutput("subsetSelection"),
+
+          uiOutput("colorOverlaySelectUIbottom"),
           
           radioButtons("density", "Expression or Density:",
                        c("Expression" = "exp",
@@ -170,11 +177,11 @@ ui <- fluidPage(
           # this is hard coded for any experimental groupings to be viz'd
           # first in concat list is default display
           selectInput("group", "Group:", 
-                        c("slide view" = "slide.type",
-                          "tile ROI view" = "tile.ROI",
-                          "MIBIscope view" = "MIBIscope",
-                          "Slide with ROI view" = "slide.with.ROI",
-                          "Cell annotation view" = "final_SOM_cluster_name"
+                        c("Slide Type" = "slide_type",
+                          "ROI View" = "roi_id",
+                          "MIBIscope view" = "mibi_instr",
+                          "Phenotype View" = "phenotype",
+                          "Cell Neighborhood View" = "neigh_kmeans"
                           )),
           downloadButton("download", class = "btn-block", label = "Download gate-annotated dataset as .csv"),
           ## text output -----
@@ -269,19 +276,54 @@ server <- function(input, output, session) {
   })# Y axis
   # TESTING
   ### choose color axis ---------------
-  output$colorOverlaySelectUI <- renderUI({
+  output$colorOverlaySelectUItop <- renderUI({
     req(data())
-    selectInput("column_color", "Select color axis", 
+    selectInput("column_color_top", "Select colors - Top Plot", 
                 choices = colnames(data()), 
                 selected = "cell_label") # defaults to CD45
+  })# Color axis
+
+  output$subsetSelection <- renderUI({
+    req(input$column_color_top)
+    req(data())
+
+    choices <- switch(
+      input$column_color_top,
+
+      "phenotype" = c(
+        "all",
+        unique(data()$phenotype)
+      ),
+
+      "neigh_kmeans" = c(
+        "all",
+        unique(data()$neigh_kmeans)
+      ),
+      NULL
+    )
+
+    req(choices)
+
+    selectInput(
+      "overlay_option",
+      "Select phenotype or cell neighborhood",
+      choices = choices
+    )
+  })
+    
+  output$colorOverlaySelectUIbottom <- renderUI({
+    req(data())
+    selectInput("column_color_bottom", "Select colors - Bottom Plot", 
+                choices = c("phenotype", "neigh_kmeans", "default"), 
+                selected = "default")
   })# Color axis
   
   ## Observe for density -----
   observeEvent(input$density, {
     if(input$density == "dens") {
-      shinyjs::disable('colorOverlaySelectUI') 
+      shinyjs::disable('colorOverlaySelectUItop') 
     } else {
-      shinyjs::enable('colorOverlaySelectUI')
+      shinyjs::enable('colorOverlaySelectUItop')
     }
   }, ignoreNULL = T)
   
@@ -290,10 +332,21 @@ server <- function(input, output, session) {
   
   ### biaxial1 ggplot (top pane) ---------------
   output$biAxial1 <- renderPlot({
-    req(data(), input$column_X, input$column_Y, input$column_color, input$density) # req data and coordinates to be loaded before plot appears
-    rows.rand <- sample(nrow(data())) # randomized rows used for plotting
-    selected_color_col <- input$column_color # string of selected col for color
-    eval_color_data_type <- data()[[selected_color_col]][1] # extract first value for selected col to evaluate
+    ### Subset the if required
+    data_filtered <- data()
+
+    if (!is.null(input$overlay_option) &&
+        input$overlay_option != "all") {
+      data_filtered <- data_filtered |>
+        filter(
+          .data[[input$column_color_top]] == input$overlay_option
+        )
+    }
+
+    req(data(), input$column_X, input$column_Y, input$column_color_top, input$density) # req data and coordinates to be loaded before plot appears
+    rows.rand <- sample(nrow(data_filtered)) # randomized rows used for plotting
+    selected_color_col <- input$column_color_top # string of selected col for color
+    eval_color_data_type <- data_filtered[[selected_color_col]][1] # extract first value for selected col to evaluate
     
     ### color scale evaluation, if statement to select color option for number of factor/string
     #### Logic for ggplot color -----
@@ -303,13 +356,13 @@ server <- function(input, output, session) {
     }else{
       # color for non-numerical column - i.e. factor colum (like slide type, MIBIscope, etc)
       # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1) # only has 8 colors
-      
-      expression_color_scale = scale_color_viridis_d(option = "plasma") # may want to update to better pallete, OK for now.
+
+      expression_color_scale = scale_color_paletteer_d("pals::polychrome") # may want to update to better pallete, OK for now.
       
     }
     
     ### ggplot obj -----
-    g <- ggplot(data()[rows.rand,], # data()[rows.rand,] - removing [rows.rand,] to check if that is leading to additional annotated cells in gate
+    g <- ggplot(data_filtered[rows.rand,], # data()[rows.rand,] - removing [rows.rand,] to check if that is leading to additional annotated cells in gate
            aes_string(x = input$column_X, # X and Y entered in by drop down
                       y = input$column_Y
                       )) +
@@ -329,9 +382,9 @@ server <- function(input, output, session) {
     
     if(isTRUE(colors)){ # if NOT plotting density
       g + 
-        geom_point(alpha= 0.5, aes_string(color = input$column_color)) + # initial alpha
+        geom_point(alpha= 0.5, aes_string(color = input$column_color_top)) + # initial alpha
         geom_point( # geom point objects for those highlighted with the brush
-          data = brushedPoints(data(), brush), # brush object created below
+          data = brushedPoints(data_filtered, brush), # brush object created below
           alpha= 0.75, 
           color = app.colors["vivid blue"]) + # new color of cells that are highlighted
         labs(title = "Overlaid single-cell expression") + 
@@ -432,25 +485,22 @@ server <- function(input, output, session) {
     df <- brushedPoints(data(), input$plot1_brush, allRows = F)
     print(noquote(paste( "Total cells in gate:", nrow(df))))
 
-    print(noquote("For each condition:"))
-    print(table(df$sample.Group))
+    # print(noquote("For each condition:"))
+    # print(table(df$sample.Group))
     # print(colnames(data()))
 
     ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT - TODO
     # print(noquote("Count of cells in metaCluster_R1:"))
     # print(table(df$metaCluster_R1))
 
-    if("final_SOM_cluster_name" %in% colnames(data())){
-    print(noquote("Count of cells in metacluster group:"))
-    print(table(df$final_SOM_cluster_name))
+    if("phenotype" %in% colnames(data())){
+      print(noquote("Count of cell phenotypes:"))
+      print(table(df$phenotype))
     }
 
-    if("final_name" %in% colnames(data())){
-    print(noquote("Percent of cells in final annotated grouping:"))      
-      final_counts <- table(df$final_name)
-      final_proportions <- prop.table(final_counts)
-      final_pcent <- final_proportions * 100
-      print(round(final_pcent, 2))
+    if("neigh_kmeans" %in% colnames(data())){
+      print(noquote("Count of cell neighborhoods:"))
+      print(table(df$neigh_kmeans))
     }
 
   }, width = 50)# displays data table
@@ -467,35 +517,43 @@ server <- function(input, output, session) {
     c(X = input$biax1_click$x, Y = input$biax1_click$y) # input$column_X input$column_Y
     
   }, width = 50)# displays data table
-  
-  ### biaxial2 ggplot (bottom) ---------------
-  output$biAxial2 <- renderPlot({
-    # req data and coordinates to be loaded before plot appears
-    req(data(), input$column_X, input$column_Y, input$column_color)
-    rows.rand2 <- sample(nrow(data())) # randomized rows used for plotting
-    ggplot(data()[rows.rand2,], 
-           aes_string(
-             x = "centroid_X_um", # X and Y entered in by drop down - updated to drop "." for underscore
-             y = "centroid_Y_um")) + 
-      geom_point(# mainplot style
-        alpha= 0.5, 
-        color = "black") + 
-      geom_point( # geom point objects for those highlighted with the brush
-        data = brushedPoints(data(), brush), # brush object created below
-        size = 2,
-        shape = 21,
-        alpha= 0.75, 
-        color = app.Ex.colors["light white warm"],
-        fill = app.Ex.colors["light green 4"]) + # new color of cells that are highlighted
-      theme_minimal() + # theme
-      theme(
-        axis.text.x = element_blank(),  # Removes x-axis text labels
-        axis.text.y = element_blank()
-      ) +
-      # facet_wrap(~get(input$group)) +
-      scale_y_reverse() + # reverse Y axis so the indexing matches default (counts from 0 at top left for Y axis)
-      labs(title = paste("Cell centroid biaxial")) # biaxial plot
-  })
+    
+    output$biAxial2 <- renderPlot({
+      req(data(), input$column_color_bottom)
+      
+      color_col <- input$column_color_bottom  
+      req(color_col, color_col != "")          
+
+      rows.rand2 <- sample(nrow(data()))
+
+      # If selection is "default" - everything is black, if not, it is scaled by color
+      if (color_col == "default") {
+        color_layer <- geom_point(alpha = 0.5, color = "black")
+        scale_layer <- NULL
+      } else {
+        color_layer <- geom_point(
+          alpha = 0.5,
+          aes(color = .data[[color_col]])
+        )
+        scale_layer <- scale_color_paletteer_d("pals::polychrome")
+      }
+
+      ggplot(data()[rows.rand2, ],
+            aes(x = .data[["centroid_X_um"]],
+                y = .data[["centroid_Y_um"]])) +
+        geom_point( # geom point objects for those highlighted with the brush
+          data = brushedPoints(data(), brush), # brush object created below
+          shape = "square") + # new shape of cells that are highlighted
+        color_layer +
+        scale_layer +
+        theme_minimal() +
+        theme(
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank()
+        ) +
+        scale_y_reverse() +
+        labs(title = "Cell centroid biaxial", x= "Centroid (um)", y = "Centroid (um)")
+    })
   
   # Download -------------------------------------------------------
   # the Download .csv button will download the dataset with added annotations to the "/Downloads/" directory
@@ -507,7 +565,7 @@ server <- function(input, output, session) {
       fwrite(data(), file)
     }
   )
-}
+  }
 
 # Run App -------------------------------------------------------
 
