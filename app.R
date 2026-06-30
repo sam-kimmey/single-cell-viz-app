@@ -400,9 +400,9 @@ server = function(input, output, session) {
     
     ### ggplot obj -----
     g = ggplot(data_filtered[rows.rand,], # data()[rows.rand,] - removing [rows.rand,] to check if that is leading to additional annotated cells in gate
-           aes_string(x = input$column_X, # X and Y entered in by drop down
-                      y = input$column_Y
-                      )) +
+            do.call(aes, list(x = as.name(input$column_X), # X and Y entered in by drop down
+                                          y = as.name(input$column_Y)
+                                  ))) +
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE) + # line for dynamic view/zoom of plot
       theme_minimal() + # theme
       labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) +
@@ -420,7 +420,7 @@ server = function(input, output, session) {
     
     if(isTRUE(colors)){ # if NOT plotting density
       g + 
-        geom_point(alpha= 0.5, aes_string(color = input$column_color_top)) + # initial alpha
+        geom_point(alpha= 0.5, do.call(aes, list(color = as.name(input$column_color_top)))) + # initial alpha
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered, brush), # brush object created below
           alpha= 0.75, 
