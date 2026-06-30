@@ -43,7 +43,7 @@ app.Ex.colors = c(
   "light white warm" = "#ffffffff"
 )
 
-deploy_msg = paste0("Last update: June 2026. Developed by Sam Kimmey, Josh Kramer")
+deploy_msg = paste0("Last update: June 2026. Developed by Sam Kimmey, PhD and Josh Kramer")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui = fluidPage(
