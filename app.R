@@ -266,29 +266,45 @@ server = function(input, output, session) {
   ### If there are mutliple ROIs, select ROI to view  ---------------
   output$roi_selector = renderUI({
     req(data())
-    selectInput("roi", "Select ROI to Visualize", 
-                choices = unique(data()$roi_id))
-  })# Color axis
+
+    roi_choices <- na.omit(unique(data()$roi_id))
+
+    selectInput(
+      "roi",
+      "Select ROI to Visualize",
+      choices = if (length(roi_choices) > 1) {
+        c("All", roi_choices)
+      } else {
+        roi_choices
+      },
+      selected = if (length(roi_choices) > 1) "All" else roi_choices
+    )
+  })
   
   # X axis - default to centroid axis
   ### choose X axis ---------------
   output$columnSelectUI_X = renderUI({
     req(data())
-    selectInput("column_X", "Select X axis", choices = colnames(data()), 
+    selectInput("column_X", 
+                "Select X axis", 
+                choices = colnames(data()), 
                 selected = "centroid_X_um")
   })# X axis
     
   ### choose Y axis ---------------
   output$columnSelectUI_Y = renderUI({
     req(data())
-    selectInput("column_Y", "Select Y axis", choices = colnames(data()), 
+    selectInput("column_Y", 
+                "Select Y axis", 
+                choices = colnames(data()), 
                 selected = "centroid_Y_um") # switch back to centroid for default
   })# Y axis
   # TESTING
   ### choose color axis for top plot ---------------
   output$colorOverlaySelectUItop = renderUI({
     req(data())
-    selectInput("column_color_top", "Select colors - Top Plot", 
+    selectInput("column_color_top", 
+                "Select colors - Top Plot", 
                 choices = colnames(data()), 
                 selected = "cell_label") # defaults to CD45
   })# Color axis
@@ -300,24 +316,21 @@ server = function(input, output, session) {
 
     choices = switch(
       input$column_color_top,
-
       "phenotype" = c(
-        "all",
+        "All",
         unique(data()$phenotype)
       ),
-
       "neigh_kmeans" = c(
-        "all",
+        "All",
         unique(data()$neigh_kmeans)
       ),
       NULL
     )
 
     req(choices)
-
     selectInput(
       "overlay_option",
-      "Select phenotype or cell neighborhood",
+      "Subset by phenotype or cell neighborhood",
       choices = choices
     )
   })
@@ -325,7 +338,8 @@ server = function(input, output, session) {
   ### choose color axis for bottom plot ---------------
   output$colorOverlaySelectUIbottom = renderUI({
     req(data())
-    selectInput("column_color_bottom", "Select colors - Bottom Plot", 
+    selectInput("column_color_bottom", 
+                "Select colors - Bottom Plot", 
                 choices = c("phenotype", "neigh_kmeans", "default"), 
                 selected = "default")
   })# Color axis
@@ -342,8 +356,12 @@ server = function(input, output, session) {
   data_roi_filter = reactive({
     req(input$roi)
 
-    data() |>
-      filter(roi_id == input$roi)
+    if (input$roi != "All") {
+      data() |>
+        filter(roi_id == input$roi)
+    } else {
+      data()
+    }
   })
   
   ## Zoomable plot ---------
@@ -355,7 +373,7 @@ server = function(input, output, session) {
     data_filtered = data_roi_filter()
 
     if (!is.null(input$overlay_option) &&
-        input$overlay_option != "all") {
+        input$overlay_option != "All") {
       data_filtered = data_filtered |>
         filter(
           .data[[input$column_color_top]] == input$overlay_option
@@ -387,7 +405,8 @@ server = function(input, output, session) {
                       )) +
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE) + # line for dynamic view/zoom of plot
       theme_minimal() + # theme
-      labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) # biaxial plot
+      labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) +
+      facet_wrap(~ roi_id, scale = "free") # biaxial plot
     
     ### Exp/Density switch ----
     colors = switch(
@@ -543,7 +562,9 @@ server = function(input, output, session) {
       color_col = input$column_color_bottom  
       req(color_col, color_col != "")          
 
-      rows.rand2 = sample(nrow(data_roi_filter()))
+      data_filtered2 = data_roi_filter()
+
+      rows.rand2 = sample(nrow(data_filtered2))
 
       # If selection is "default" - everything is black, if not, it is scaled by color
       if (color_col == "default") {
@@ -557,11 +578,11 @@ server = function(input, output, session) {
         scale_layer = scale_color_paletteer_d("pals::polychrome")
       }
 
-      ggplot(data_roi_filter()[rows.rand2, ],
+      ggplot(data_filtered2[rows.rand2, ],
             aes(x = .data[["centroid_X_um"]],
                 y = .data[["centroid_Y_um"]])) +
         geom_point( # geom point objects for those highlighted with the brush
-          data = brushedPoints(data(), brush), # brush object created below
+          data = brushedPoints(data_filtered2, brush), # brush object created below
           shape = "square") + # new shape of cells that are highlighted
         color_layer +
         scale_layer +
@@ -571,6 +592,7 @@ server = function(input, output, session) {
           axis.text.y = element_blank()
         ) +
         scale_y_reverse() +
+        facet_wrap(~ roi_id, scale = "free") +
         labs(title = "ROI Visualization", x= "Centroid (um)", y = "Centroid (um)")
     })
   
