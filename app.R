@@ -267,7 +267,7 @@ server = function(input, output, session) {
   output$roi_selector = renderUI({
     req(data())
 
-    roi_choices <- na.omit(unique(data()$roi_id))
+    roi_choices = na.omit(unique(data()$roi_id))
 
     selectInput(
       "roi",
@@ -314,6 +314,7 @@ server = function(input, output, session) {
     req(input$column_color_top)
     req(data())
 
+    # If phenoype or neigh_kmeans, gives all options, or is NULL and does not appear
     choices = switch(
       input$column_color_top,
       "phenotype" = c(
@@ -353,6 +354,7 @@ server = function(input, output, session) {
     }
   }, ignoreNULL = T)
 
+  # Filter data by ROI if selected option is not "All"
   data_roi_filter = reactive({
     req(input$roi)
 
@@ -406,7 +408,7 @@ server = function(input, output, session) {
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE) + # line for dynamic view/zoom of plot
       theme_minimal() + # theme
       labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) +
-      facet_wrap(~ roi_id, scale = "free") # biaxial plot
+      facet_wrap(~ roi_id, scales = "free") # biaxial plot
     
     ### Exp/Density switch ----
     colors = switch(
@@ -457,12 +459,12 @@ server = function(input, output, session) {
   makeReactiveBinding("brush")
   
   observeEvent(input$plot1_brush, { # create reactive brush object
-    brush <= input$plot1_brush
+    brush <<- input$plot1_brush
   })
   
   ### Gate info button ---------------
   observeEvent(input$gate_info_toggle, {
-    res = brushedPoints(data(), input$plot1_brush, allRows = T)$selected_
+    res <<- brushedPoints(data(), input$plot1_brush, allRows = T)$selected_
   })# reset data to all true
   
   ### reset colored points button ---------------
@@ -470,7 +472,7 @@ server = function(input, output, session) {
   observeEvent(input$exclude_reset, {
     session$resetBrush("plot1_brush")
     # vals$keeprows = rep(TRUE, nrow(data()))
-    brush <= NULL
+    brush <<- NULL
   })# Reset all points
   
   ### reset Anno button ---------------
@@ -479,7 +481,7 @@ server = function(input, output, session) {
     data()[,gateAnnotation:="NA"]
     # https://mastering-shiny.org/action-graphics.html - visit this link to help with coding this button to
     # remove annotation and update plot once that is done
-    brush <= NULL
+    brush <<- NULL
   })# Reset all points
   
   ### Gate Name button ---------------
@@ -581,18 +583,18 @@ server = function(input, output, session) {
       ggplot(data_filtered2[rows.rand2, ],
             aes(x = .data[["centroid_X_um"]],
                 y = .data[["centroid_Y_um"]])) +
+        color_layer +
+        scale_layer +
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered2, brush), # brush object created below
           shape = "square") + # new shape of cells that are highlighted
-        color_layer +
-        scale_layer +
         theme_minimal() +
         theme(
           axis.text.x = element_blank(),
           axis.text.y = element_blank()
         ) +
         scale_y_reverse() +
-        facet_wrap(~ roi_id, scale = "free") +
+        facet_wrap(~ roi_id, scales = "free") +
         labs(title = "ROI Visualization", x= "Centroid (um)", y = "Centroid (um)")
     })
   
