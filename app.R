@@ -583,11 +583,11 @@ server = function(input, output, session) {
       ggplot(data_filtered2[rows.rand2, ],
             aes(x = .data[["centroid_X_um"]],
                 y = .data[["centroid_Y_um"]])) +
-        color_layer +
-        scale_layer +
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered2, brush), # brush object created below
           shape = "square") + # new shape of cells that are highlighted
+        color_layer +
+        scale_layer +
         theme_minimal() +
         theme(
           axis.text.x = element_blank(),
