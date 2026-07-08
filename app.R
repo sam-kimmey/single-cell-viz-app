@@ -618,8 +618,8 @@ server = function(input, output, session) {
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered2, brush), # brush object created below
           # shape = "square",
-          shape = 22, 
-          color = "red", 
+          shape = 22,
+          color = "red",
           fill = cell_highlight_color,
           size = 5, stroke = 1.5,
           alpha = 0.7
