@@ -1,4 +1,4 @@
-# Author: Sam Kimmey, PhD
+# Author: Sam Kimmey, PhD, Josh Kramer
 # Create Date: July 15, 2024
 
 # Purpose: This app was developed in order to viz single-cell datasets that are derived from segmented imaging data 
@@ -31,6 +31,7 @@ library(shinymanager)
 library(tidyverse)
 library(pals)
 library(paletteer)
+library(Polychrome)
 
 app.colors = c(
   "light blue" = "#0f7d1cff",
@@ -43,22 +44,22 @@ app.Ex.colors = c(
   "light white warm" = "#ffffffff"
 )
 
-deploy_msg = paste0("Last update: June 2026. Developed by Sam Kimmey, PhD and Josh Kramer")
+deploy_msg = paste0("Last update: July 2026. Developed by Josh Kramer and Sam Kimmey, PhD")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui = fluidPage(
 
-  absolutePanel(
-    fixed = TRUE,
-    bottom = 5,
-    left = 10,
-    width = 500,
-    height = 20,
-    tags$div(
-      p(deploy_msg),
-      style = "color: #aeaea0ff;font-size: 10px;"
-    )
-  ),
+  # absolutePanel(
+  #   fixed = TRUE,
+  #   bottom = 5,
+  #   right = 10,
+  #   width = 500,
+  #   height = 20,
+  #   tags$div(
+  #     p(deploy_msg),
+  #     style = "color: #aeaea0ff;font-size: 10px;"
+  #   )
+  # ),
 
   tags$head(
     # Note the wrapping of the string in HTML()
@@ -141,6 +142,9 @@ ui = fluidPage(
     # subtitle using h3
     h3("an interactive spatial single-cell data visualization tool"),
 
+    # Authors
+    h6("Last update: July 2026. Developed by Josh Kramer and Sam Kimmey, PhD"),
+
     # Sidebar with a inputs for plot ----
     sidebarLayout(
         sidebarPanel(
@@ -156,6 +160,8 @@ ui = fluidPage(
           ## Col entries & buttons -----
           uiOutput("roi_selector"),
 
+          uiOutput("facetWrap"),
+
           uiOutput("columnSelectUI_X"),
             
           uiOutput("columnSelectUI_Y"),
@@ -163,7 +169,7 @@ ui = fluidPage(
           uiOutput("colorOverlaySelectUItop"),
 
           uiOutput("subsetSelection"),
-
+        
           uiOutput("colorOverlaySelectUIbottom"),
           
           radioButtons("density", "Expression or Density:",
@@ -201,7 +207,7 @@ ui = fluidPage(
            dblclick = "plot1_dblclick",
            click = "biax1_click"
           ), # brush object
-           plotOutput("biAxial2", width = "1000px", height = "1000px"), # can modify width and height depending on facet to group on lower plot
+           plotOutput("biAxial2", width = "1000px", height = "1000px") # can modify width and height depending on facet to group on lower plot
            # set to: plotOutput("biAxial2", width = "800px", height = "1000px") - in order to better view lower plot with multiple rows
            # tableOutput("data")
            )
@@ -277,8 +283,22 @@ server = function(input, output, session) {
       } else {
         roi_choices
       },
-      selected = if (length(roi_choices) > 1) "All" else roi_choices
+      selected = (if (length(roi_choices) > 1) "All" else roi_choices)
     )
+  })
+
+  # If there are multiple ROIs in the dataset, allow the user to facet wrap the top plot by ROI
+  output$facetWrap = renderUI({
+    req(data())
+    req(input$roi)
+
+    if (length(unique(data()$roi_id)) > 1 && input$roi == "All") {
+      radioButtons("facetWrap", "Facet Wrap Top Plot by ROI?", 
+                  c("Yes" = "yes", 
+                    "No" = "no"))
+    } else {
+      NULL
+    }
   })
   
   # X axis - default to centroid axis
@@ -396,7 +416,7 @@ server = function(input, output, session) {
       # color for non-numerical column - i.e. factor colum (like slide type, MIBIscope, etc)
       # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1) # only has 8 colors
 
-      expression_color_scale = scale_color_paletteer_d("pals::polychrome") # may want to update to better pallete, OK for now.
+      expression_color_scale = scale_color_paletteer_d("Polychrome::palette36") # may want to update to better pallete, OK for now.
       
     }
     
@@ -406,9 +426,21 @@ server = function(input, output, session) {
                                           y = as.name(input$column_Y)
                                   ))) +
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE) + # line for dynamic view/zoom of plot
-      theme_minimal() + # theme
-      labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) +
-      facet_wrap(~ roi_id, scales = "free") # biaxial plot
+      theme_bw()
+
+    # Facet Wrap the top graph by ROI if user requested                   
+    if (isTruthy(input$facetWrap) && input$facetWrap == "yes") {
+      g = g + facet_wrap(~ roi_id, scales = "free")
+    } else {
+      g
+    }
+
+    # Title the top plot
+    if (input$roi == "All") {
+      g = g  + labs(title = paste("Biaxial of All ROIs with", input$column_X, "by", input$column_Y, "-", input$column_color_top))
+    } else {
+      g = g +labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by", input$column_Y, "-", input$column_color_top)) 
+    }
     
     ### Exp/Density switch ----
     colors = switch(
@@ -418,7 +450,7 @@ server = function(input, output, session) {
     )
     
     # reverse centroid Y ordering to match expected orientation
-    if(input$column_Y == "centroid_Y_um"){g = g + scale_y_reverse()}
+    # if(input$column_Y == "centroid_Y_um"){g = g + scale_y_reverse()}
     
     if(isTRUE(colors)){ # if NOT plotting density
       g + 
@@ -427,18 +459,17 @@ server = function(input, output, session) {
           data = brushedPoints(data_filtered, brush), # brush object created below
           alpha= 0.75, 
           color = app.colors["vivid blue"]) + # new color of cells that are highlighted
-        labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by",input$column_Y)) + 
-        expression_color_scale
+          expression_color_scale
     }else{ # else plotting density of data points
       g + 
-        geom_point(alpha= 0.25, color = "black", ) +
+        geom_point(alpha= 0.25, color = "black") +
         geom_density2d() +
         geom_density_2d_filled(alpha = 0.25, contour_var = "count") + # need to rename legend
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
           color = app.colors["vivid blue"]) + # new color of cells that are highlighted
-        labs(title = "Density plot", fill = "Cells per contour")
+        labs(title = paste("Density plot", "-", input$column_color_top), fill = "Cells per contour")
     }
   })# biaxial ggplot end
   
@@ -522,41 +553,40 @@ server = function(input, output, session) {
   ### displays selected cell info -----------
   output$gateCoords = renderPrint({
     req(data(), input$column_X, input$column_Y)
-    df = brushedPoints(data(), input$plot1_brush, allRows = F)
-    print(noquote(paste( "Total cells in gate:", nrow(df))))
+    df = brushedPoints(data(), input$plot1_brush, allRows = FALSE)
 
-    # print(noquote("For each condition:"))
-    # print(table(df$sample.Group))
-    # print(colnames(data()))
+    cat("Total cells in gate:", nrow(df), "\n\n")
 
-    ### COMMENT THIS OUT IF THERE IS NO METACLUSTER GROUP FOUND - NEED TO CONVERT TO AN IF STATEMENT - TODO
-    # print(noquote("Count of cells in metaCluster_R1:"))
-    # print(table(df$metaCluster_R1))
+    # column name -> display label
+    summary_cols = c(
+      roi_id         = "Count of cells per ROI",
+      phenotype      = "Count of cell phenotypes",
+      neigh_kmeans   = "Count of cell neighborhoods",
+      sample_group1  = "Count of cells per Sample Grouping (1)",
+      sample_group2  = "Count of cells per Sample Grouping (2)"
+    )
 
-    if("phenotype" %in% colnames(data())){
-      print(noquote("Count of cell phenotypes:"))
-      print(table(df$phenotype))
+    for (col in names(summary_cols)) {
+      if (col %in% colnames(data())) {
+        cat(summary_cols[[col]], ":\n", sep = "")
+        print(table(df[[col]]))
+        cat("\n")
+      }
     }
-
-    if("neigh_kmeans" %in% colnames(data())){
-      print(noquote("Count of cell neighborhoods:"))
-      print(table(df$neigh_kmeans))
-    }
-
-  }, width = 50)# displays data table
+  }, width = 50)
 
   ### displays click data info -----------
   output$clickCoords = renderPrint({
+    req(input$biax1_click, input$column_X, input$column_Y)
 
     x_name = input$column_X
     y_name = input$column_Y
-    req(input$biax1_click, input$column_X, input$column_Y)
-    print(noquote("Click coordinates for"))
-    print(noquote(paste("X:", x_name)))
-    print(noquote(paste("Y:", y_name)))
-    c(X = input$biax1_click$x, Y = input$biax1_click$y) # input$column_X input$column_Y
-    
-  }, width = 50)# displays data table
+
+    cat("Click coordinates for:\n")
+    cat(sprintf("  X (%s): %.2f\n", x_name, input$biax1_click$x))
+    cat(sprintf("  Y (%s): %.2f\n", y_name, input$biax1_click$y))
+
+  }, width = 50)
     
     output$biAxial2 = renderPlot({
       req(data(), input$column_color_bottom)
@@ -577,7 +607,7 @@ server = function(input, output, session) {
           alpha = 0.5,
           aes(color = .data[[color_col]])
         )
-        scale_layer = scale_color_paletteer_d("pals::polychrome")
+        scale_layer = scale_color_paletteer_d("Polychrome::palette36")
       }
 
       ggplot(data_filtered2[rows.rand2, ],
@@ -588,14 +618,14 @@ server = function(input, output, session) {
           shape = "square") + # new shape of cells that are highlighted
         color_layer +
         scale_layer +
-        theme_minimal() +
-        theme(
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank()
-        ) +
-        scale_y_reverse() +
+        theme_bw() +
+        # theme(
+        #   axis.text.x = element_blank(),
+        #   axis.text.y = element_blank()
+        # ) +
+        # scale_y_reverse() +
         facet_wrap(~ roi_id, scales = "free") +
-        labs(title = "ROI Visualization", x= "Centroid (um)", y = "Centroid (um)")
+        labs(title = paste("ROI Visualization -", input$column_color_bottom), x= "Centroid (um)", y = "Centroid (um)")
     })
   
   # Download -------------------------------------------------------
@@ -617,7 +647,7 @@ shinyApp(
   ui = secure_app(ui,
   tags_top = tags$div(
     tags$h3("CELLviz"),
-    tags$h6("Developed by Oregon Physics"),
+    tags$h6("Developed by Oregon Physics")
     
     # COMMENT TO RESTORE IMG - including photo seemed to slow down/lead to crash when loading data
     # tags$a(

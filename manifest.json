@@ -69,6 +69,33 @@
         "Built": "R 4.5.0; ; 2025-09-03 22:19:58 UTC; unix"
       }
     },
+    "Polychrome": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "Polychrome",
+        "Title": "Qualitative Palettes with Many Colors",
+        "Version": "1.5.4",
+        "Date": "2025-04-06",
+        "Authors@R": "c(person(given = \"Guy\", family = \"Brock\", role = \"aut\"),\n\t    person(given = c(\"Kevin\", \"R.\"), family = \"Coombes\",\n                   role = c(\"aut\", \"cre\"), email = \"krc@silicovore.com\"))",
+        "Description": "Tools for creating, viewing, and assessing qualitative\n palettes with many (20-30 or more) colors. See Coombes and colleagues\n (2019) <doi:10.18637/jss.v090.c01>.",
+        "Depends": "R (>= 4.4)",
+        "Imports": "colorspace, scatterplot3d, methods, graphics, grDevices,\nstats, utils",
+        "Suggests": "RColorBrewer, knitr, rmarkdown, ggplot2",
+        "License": "Apache License (== 2.0)",
+        "LazyLoad": "yes",
+        "LazyData": "no",
+        "URL": "http://oompa.r-forge.r-project.org/",
+        "VignetteBuilder": "knitr",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-04-06 21:14:05 UTC; kevin",
+        "Author": "Guy Brock [aut],\n  Kevin R. Coombes [aut, cre]",
+        "Maintainer": "Kevin R. Coombes <krc@silicovore.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-04-06 21:50:02 UTC",
+        "Built": "R 4.5.0; ; 2025-04-06 22:08:42 UTC; unix"
+      }
+    },
     "R.methodsS3": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2903,6 +2930,29 @@
         "Built": "R 4.5.0; ; 2025-04-24 11:54:38 UTC; unix"
       }
     },
+    "scatterplot3d": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "scatterplot3d",
+        "Version": "0.3-45",
+        "Date": "2026-02-23",
+        "Title": "3D Scatter Plot",
+        "Authors@R": "c(person(given = \"Uwe\",\n                    family = \"Ligges\",\n                    role = c(\"aut\", \"cre\"),\n                    email = \"ligges@statistik.tu-dortmund.de\"),\n             person(given = \"Martin\",\n                    family = \"Maechler\",\n                    role = \"aut\"),\n             person(given = \"Sarah\",\n                    family = \"Schnackenberg\",\n                    role = \"aut\"))",
+        "Description": "Plots a three dimensional (3D) point cloud.",
+        "Depends": "R (>= 2.7.0)",
+        "License": "GPL-2",
+        "Encoding": "UTF-8",
+        "Imports": "grDevices, graphics, stats",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-02-23 13:41:25 UTC; CRAN",
+        "Author": "Uwe Ligges [aut, cre],\n  Martin Maechler [aut],\n  Sarah Schnackenberg [aut]",
+        "Maintainer": "Uwe Ligges <ligges@statistik.tu-dortmund.de>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-02-23 17:00:07 UTC",
+        "Built": "R 4.5.2; ; 2026-02-23 18:28:17 UTC; unix"
+      }
+    },
     "scrypt": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3725,7 +3775,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "98a86f4512136af1cb0085f0736195d0"
+      "checksum": "724e78c82a4de0603da3d12c52b51c5b"
     },
     "LICENSE": {
       "checksum": "cbf991b9fdcea11a51ed2c014a3bc4ec"
