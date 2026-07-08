@@ -34,15 +34,17 @@ library(paletteer)
 library(Polychrome)
 
 app.colors = c(
-  "light blue" = "#0f7d1cff",
-  "vivid blue" = "#5fdf90ff",
-  "dark blue" = "#0c7c53ff",
-  "midnight blue" = "#0c462cff"
+  "forest_green" = "rgb(56, 99, 61)",
+  "light green" = "rgb(138, 229, 173)",
+  "forest_green2" = "#0c7c53ff",
+  "dark green" = "#0c462cff"
 )
 app.Ex.colors = c(
   "light green 4" = "#5bc076ff",
   "light white warm" = "#ffffffff"
 )
+
+cell_highlight_color = "#68c573"
 
 deploy_msg = paste0("Last update: July 2026. Developed by Josh Kramer and Sam Kimmey, PhD")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
@@ -458,7 +460,7 @@ server = function(input, output, session) {
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered, brush), # brush object created below
           alpha= 0.75, 
-          color = app.colors["vivid blue"]) + # new color of cells that are highlighted
+          color = app.colors["forest_green2"]) + # new color of cells that are highlighted
           expression_color_scale
     }else{ # else plotting density of data points
       g + 
@@ -468,7 +470,7 @@ server = function(input, output, session) {
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
-          color = app.colors["vivid blue"]) + # new color of cells that are highlighted
+          color = app.colors["forest_green2"]) + # new color of cells that are highlighted
         labs(title = paste("Density plot", "-", input$column_color_top), fill = "Cells per contour")
     }
   })# biaxial ggplot end
@@ -615,7 +617,13 @@ server = function(input, output, session) {
                 y = .data[["centroid_Y_um"]])) +
         geom_point( # geom point objects for those highlighted with the brush
           data = brushedPoints(data_filtered2, brush), # brush object created below
-          shape = "square") + # new shape of cells that are highlighted
+          # shape = "square",
+          shape = 22, 
+          color = "red", 
+          fill = cell_highlight_color,
+          size = 5, stroke = 1.5,
+          alpha = 0.7
+        ) + # new shape of cells that are highlighted
         color_layer +
         scale_layer +
         theme_bw() +
