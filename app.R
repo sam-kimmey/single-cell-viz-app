@@ -291,7 +291,7 @@ server = function(input, output, session) {
     req(input$roi)
 
     if (length(unique(data()$roi_id)) > 1 && input$roi == "All") {
-      radioButtons("facetWrap", "Facet Wrap Top Plot by ROI?", 
+      radioButtons("facet_wrap", "Facet Wrap Top Plot by ROI?", 
                   c("Yes" = "yes", 
                     "No" = "no"))
     } else {
@@ -425,7 +425,7 @@ server = function(input, output, session) {
       theme_bw()
 
     # Facet Wrap the top graph by ROI if user requested                   
-    if (isTruthy(input$facetWrap) && input$facetWrap == "yes") {
+    if (isTruthy(input$facet_wrap) && input$facet_wrap == "yes") {
       g = g + facet_wrap(~ roi_id, scales = "free")
     } else {
       g
