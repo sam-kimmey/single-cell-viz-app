@@ -84,6 +84,9 @@ ui = fluidPage(
         h5 {
         color: #000000ff;
         }
+        h6 {
+        color: rgb(220, 220, 220);
+        }
         .shiny-input-container {
         color: #474747;
         }"))

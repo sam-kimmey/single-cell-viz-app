@@ -77,4 +77,13 @@ shiny::runApp("app.R")
 
 ## Authors
 
-Developed by **Josh Kramer** and **Sam Kimmey, PhD**
+Developed by **Josh Kramer**, **Vini Karumuru**, and **Sam Kimmey**
+
+---
+### License and Trademark
+
+The source code of this project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+However, the license does strictly apply to the underlying software code only. It does NOT grant permission to
+use the Oregon Physics LLC or MIBIscope name, logos, trademarks, or official branding assets.
+All rights to corporate branding, design assets, and trademarks are explicitly reserved by Oregon Physics LLC.
