@@ -1,5 +1,6 @@
-# Author: Sam Kimmey, PhD, Josh Kramer
+# Author: Sam Kimmey PhD, Josh Kramer, Vini Karumuru
 # Create Date: July 15, 2024
+# Last Update: July 2026
 
 # Purpose: This app was developed in order to viz single-cell datasets that are derived from segmented imaging data 
 # and subsequent count extraction, followed by any necessary data transformation, normalization, cluster analysis, etc.
@@ -68,9 +69,11 @@ ui = fluidPage(
     # below tags$sytle enable some modifying of the shiny styling
     # below I updated the font
     tags$style(HTML("
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Rammetto+One&display=swap');        body {
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Rammetto+One&display=swap');        
+        body {
         background-color: white;
         color: #0c7c53ff;
+        padding-bottom: 60px !important; /* Must be larger than the footer height (40px) */
         }
         
         h2 {
@@ -85,7 +88,19 @@ ui = fluidPage(
         color: #000000ff;
         }
         h6 {
-        color: rgb(220, 220, 220);
+        color: rgb(163, 163, 163);
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 30px;
+        background-color: #f8f9fa; /* Light grey background */
+        text-align: center;        /* Centers your text */
+        line-height: 10px;
+        padding: 10px 0;           /* Adds spacing around text */
+        margin: 0;                 /* Removes default browser margins */
+        border-top: 1px solid #e7e7e7; /* Optional: adds a top border divider */
+        z-index: 999;              /* Ensures it stays on top of scrollable content */
         }
         .shiny-input-container {
         color: #474747;
@@ -148,7 +163,7 @@ ui = fluidPage(
     h3("an interactive spatial single-cell data visualization tool"),
 
     # Authors
-    h6("Last update: July 2026. Developed by Josh Kramer and Sam Kimmey, PhD"),
+    h6("© 2026 Oregon Physics, LLC. All logos and trademarks assets are reserved."),
 
     # Sidebar with a inputs for plot ----
     sidebarLayout(
@@ -161,7 +176,6 @@ ui = fluidPage(
           ## input file -----
           fileInput("file", "Select .csv file", accept = ".csv"),
 
-          
           ## Col entries & buttons -----
           uiOutput("roi_selector"),
 
@@ -216,7 +230,7 @@ ui = fluidPage(
            # set to: plotOutput("biAxial2", width = "800px", height = "1000px") - in order to better view lower plot with multiple rows
            # tableOutput("data")
            )
-        )
+        ) 
     )
 
 make_creds = function(){
@@ -671,7 +685,6 @@ shinyApp(
     #     alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
     #   )
     # )
-
   )
 ), server = server)
 
