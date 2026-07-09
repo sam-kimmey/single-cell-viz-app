@@ -150,7 +150,7 @@ ui = fluidPage(
     h3("an interactive spatial single-cell data visualization tool"),
 
     # Authors
-    h5("Last update: July 2026. Developed by Josh Kramer, Vini Karumuru, and Sam Kimmey, PhD"),
+    # h5("Last update: July 2026. Developed by Josh Kramer, Vini Karumuru, and Sam Kimmey, PhD"),
 
     # Trademark
     h6("© 2026 Oregon Physics, LLC. All logos and trademarks assets are reserved."),
