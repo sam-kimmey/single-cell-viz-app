@@ -23,7 +23,7 @@ CellViz accepts a single CSV file containing single-cell data (upload limit: **1
 | Column          | Required? | Description                     |
 |-----------------|-----------|----------------------------------|
 | `roi_id`        | Required  | Unique identifier for each ROI  |
-| `phenotype`     | Optional  | Cell phenotype assignment       |
+| `phenotype`     | Optional  | Cell phenotype assignment - up to 36 phenotypes    |
 | `neigh_kmeans`  | Optional  | Cell neighborhood assignment    |
 | `sample_group1` | Optional  | Scientific sample groupings     |
 | `sample_group2` | Optional  | Scientific sample groupings     |
