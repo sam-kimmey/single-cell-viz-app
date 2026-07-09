@@ -47,22 +47,9 @@ app.Ex.colors = c(
 
 cell_highlight_color = "#68c573"
 
-deploy_msg = paste0("Last update: July 2026. Developed by Josh Kramer and Sam Kimmey, PhD")
 # Define UI for application that visualizes single-cell dataset generated from MIBI segmented data
 # UI --------------
 ui = fluidPage(
-
-  # absolutePanel(
-  #   fixed = TRUE,
-  #   bottom = 5,
-  #   right = 10,
-  #   width = 500,
-  #   height = 20,
-  #   tags$div(
-  #     p(deploy_msg),
-  #     style = "color: #aeaea0ff;font-size: 10px;"
-  #   )
-  # ),
 
   tags$head(
     # Note the wrapping of the string in HTML()
@@ -163,6 +150,9 @@ ui = fluidPage(
     h3("an interactive spatial single-cell data visualization tool"),
 
     # Authors
+    # h5("Last update: July 2026. Developed by Josh Kramer, Vini Karumuru, and Sam Kimmey, PhD"),
+
+    # Trademark
     h6("© 2026 Oregon Physics, LLC. All logos and trademarks assets are reserved."),
 
     # Sidebar with a inputs for plot ----
@@ -200,17 +190,6 @@ ui = fluidPage(
           actionButton("gate_name", "Gate name"), # added for naming the gate
           actionButton("clear_all_anno", "Clear Annotations"),
           
-          ### Choose facet -----
-          # this parameter is what will be displayed as multiple facets below the main plot
-          # this is hard coded for any experimental groupings to be viz'd
-          # first in concat list is default display
-          # selectInput("group", "Group:", 
-          #               c("Slide Type" = "slide_type",
-          #                 "ROI View" = "roi_id",
-          #                 "MIBIscope view" = "mibi_instr",
-          #                 "Phenotype View" = "phenotype",
-          #                 "Cell Neighborhood View" = "neigh_kmeans"
-          #                 )),
           downloadButton("download", class = "btn-block", label = "Download gate-annotated dataset as .csv"),
           ## text output -----
           h5("Selected data information:"), # eval labeling printed section
@@ -312,7 +291,7 @@ server = function(input, output, session) {
     req(input$roi)
 
     if (length(unique(data()$roi_id)) > 1 && input$roi == "All") {
-      radioButtons("facetWrap", "Facet Wrap Top Plot by ROI?", 
+      radioButtons("facet_wrap", "Facet Wrap Top Plot by ROI?", 
                   c("Yes" = "yes", 
                     "No" = "no"))
     } else {
@@ -433,8 +412,6 @@ server = function(input, output, session) {
       expression_color_scale = scale_color_viridis_c(option = "magma", direction = 1)
     }else{
       # color for non-numerical column - i.e. factor colum (like slide type, MIBIscope, etc)
-      # expression_color_scale = scale_color_brewer(palette = "Dark2", direction = 1) # only has 8 colors
-
       expression_color_scale = scale_color_paletteer_d("Polychrome::palette36") # may want to update to better pallete, OK for now.
       
     }
@@ -448,7 +425,7 @@ server = function(input, output, session) {
       theme_bw()
 
     # Facet Wrap the top graph by ROI if user requested                   
-    if (isTruthy(input$facetWrap) && input$facetWrap == "yes") {
+    if (isTruthy(input$facet_wrap) && input$facet_wrap == "yes") {
       g = g + facet_wrap(~ roi_id, scales = "free")
     } else {
       g
@@ -670,22 +647,22 @@ server = function(input, output, session) {
 # Run the secure shiny app 
 shinyApp( 
   ui = secure_app(ui,
-  tags_top = tags$div(
-    tags$h3("CELLviz"),
-    tags$h6("Developed by Oregon Physics")
+  # tags_top = tags$div(
+  #   tags$h3("CELLviz"),
+  #   tags$h6("Developed by Oregon Physics")
     
-    # COMMENT TO RESTORE IMG - including photo seemed to slow down/lead to crash when loading data
-    # tags$a(
-    #   href = "https://www.oregon-physics.com", # The destination URL
-    #   target = "_blank",
-    #   tags$img(
-    #     src = "logo.png", 
-    #     height = "40px", 
-    #     width = "100px",
-    #     alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
-    #   )
-    # )
-  )
+  #   # COMMENT TO RESTORE IMG - including photo seemed to slow down/lead to crash when loading data
+  #   # tags$a(
+  #   #   href = "https://www.oregon-physics.com", # The destination URL
+  #   #   target = "_blank",
+  #   #   tags$img(
+  #   #     src = "logo.png", 
+  #   #     height = "40px", 
+  #   #     width = "100px",
+  #   #     alt = "Oregon Physics Logo Link" #https://www.oregon-physics.com
+  #   #   )
+  #   # )
+  # )
 ), server = server)
 
 # Run the application with no secure login
