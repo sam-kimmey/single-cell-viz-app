@@ -6,6 +6,8 @@ CellViz makes it easy to explore spatial single-cell data across one or multiple
 
 ---
 
+![example](WWW/example_image.png)
+
 ## Features
 
 - Visualize spatial single-cell data for a single ROI or across multiple ROIs
