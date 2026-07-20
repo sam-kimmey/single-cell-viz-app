@@ -34,7 +34,7 @@ CellViz accepts a single CSV file containing single-cell data (upload limit: **1
 
 ### Requirements
 
-- R version 4.5.3
+- R version ≥ 4.5.3
 - R packages:
   - `shiny`
   - `data.table`
@@ -70,7 +70,7 @@ cd single-cell-viz-app
 ### 3. Launch the app
 
 ```r
-shiny::runApp("app.R")
+shiny::runApp()
 ```
 
 ---
