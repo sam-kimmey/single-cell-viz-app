@@ -246,7 +246,8 @@ server = function(input, output, session) {
 
   )
   
-  options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import - do not adjust
+  # Allows upload size of up to 1 GB
+  options(shiny.maxRequestSize = 1000*1024^2) 
   
   # reactivate value to store data.table
   data = reactiveVal(NULL)
@@ -305,7 +306,11 @@ server = function(input, output, session) {
     req(data())
     selectInput("column_X", 
                 "Select X axis", 
-                choices = colnames(data()), 
+                choices = setdiff(
+                  colnames(data()),
+                  c("cell_label", "cell_ID", "roi_id", "sample_group1", "sample_group2", 
+                    "cell_area", "slide_type", "mibi_instr", "roi_name", "roi_filename", 
+                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans")), 
                 selected = "centroid_X_um")
   })# X axis
     
@@ -314,17 +319,21 @@ server = function(input, output, session) {
     req(data())
     selectInput("column_Y", 
                 "Select Y axis", 
-                choices = colnames(data()), 
-                selected = "centroid_Y_um") # switch back to centroid for default
+                choices = setdiff(
+                  colnames(data()),
+                  c("cell_label", "cell_ID", "roi_id", "sample_group1", "sample_group2", 
+                    "cell_area", "slide_type", "mibi_instr", "roi_name", "roi_filename", 
+                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans")), 
+                selected = "centroid_Y_um") 
   })# Y axis
-  # TESTING
+
   ### choose color axis for top plot ---------------
   output$colorOverlaySelectUItop = renderUI({
     req(data())
     selectInput("column_color_top", 
                 "Select colors - Top Plot", 
                 choices = colnames(data()), 
-                selected = "cell_label") # defaults to CD45
+                selected = "phenotype") 
   })# Color axis
 
   ### If top plot is colored by phenotype or neighborhood, allow user to subset to a specific one
@@ -392,8 +401,7 @@ server = function(input, output, session) {
     ### Subset the if required
     data_filtered = data_roi_filter()
 
-    if (!is.null(input$overlay_option) &&
-        input$overlay_option != "All") {
+    if (!is.null(input$overlay_option) && input$overlay_option != "All") {
       data_filtered = data_filtered |>
         filter(
           .data[[input$column_color_top]] == input$overlay_option
@@ -432,11 +440,16 @@ server = function(input, output, session) {
     }
 
     # Title the top plot
-    if (input$roi == "All") {
-      g = g  + labs(title = paste("Biaxial of All ROIs with", input$column_X, "by", input$column_Y, "-", input$column_color_top))
+    if ((input$roi == "All") && (!is.null(input$overlay_option) && input$overlay_option != "All")) {
+      g = g + labs(title = paste("Biaxial of All ROIs with", gsub("_", " ", input$column_X), "by", gsub("_", " ", input$column_Y), "-", gsub("_", " ", input$overlay_option)))
+    } else if ((input$roi == "All") && (is.null(input$overlay_option) || input$overlay_option == "All")) {
+      g = g + labs(title = paste("Biaxial of All ROIs with", gsub("_", " ", input$column_X), "by", gsub("_", " ", input$column_Y), "-", gsub("_", " ", input$column_color_top)))
+    } else if ((input$roi != "All") && (!is.null(input$overlay_option) && input$overlay_option != "All")) {
+      g = g + labs(title = paste("Biaxial of", input$roi, "with", gsub("_", " ", input$column_X), "by", gsub("_", " ", input$column_Y), "-", gsub("_", " ", input$overlay_option)))
     } else {
-      g = g +labs(title = paste("Biaxial of", input$roi, "with", input$column_X, "by", input$column_Y, "-", input$column_color_top)) 
+      g = g + labs(title = paste("Biaxial of", input$roi, "with", gsub("_", " ", input$column_X), "by", gsub("_", " ", input$column_Y), "-", gsub("_", " ", input$column_color_top)))
     }
+
     
     ### Exp/Density switch ----
     colors = switch(
@@ -465,7 +478,7 @@ server = function(input, output, session) {
           data = brushedPoints(data(), brush), # brush object created below
           alpha= 0.75, 
           color = app.colors["forest_green2"]) + # new color of cells that are highlighted
-        labs(title = paste("Density plot", "-", input$column_color_top), fill = "Cells per contour")
+        labs(title = paste("Density plot", "-", gsub("_", " ", input$column_color_top), fill = "Cells per contour"))
     }
   })# biaxial ggplot end
   
@@ -627,7 +640,7 @@ server = function(input, output, session) {
         # ) +
         # scale_y_reverse() +
         facet_wrap(~ roi_id, scales = "free") +
-        labs(title = paste("ROI Visualization -", input$column_color_bottom), x= "Centroid (um)", y = "Centroid (um)")
+        labs(title = paste("ROI Visualization -", gsub("_", " ", input$column_color_bottom)), x= "Centroid (um)", y = "Centroid (um)")
     })
   
   # Download -------------------------------------------------------
@@ -646,7 +659,8 @@ server = function(input, output, session) {
 
 # Run the secure shiny app 
 shinyApp( 
-  ui = secure_app(ui,
+  ui = secure_app(ui
+  #,  
   # tags_top = tags$div(
   #   tags$h3("CELLviz"),
   #   tags$h6("Developed by Oregon Physics")
