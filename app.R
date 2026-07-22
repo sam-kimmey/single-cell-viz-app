@@ -246,7 +246,7 @@ server = function(input, output, session) {
 
   )
   
-  options(shiny.maxRequestSize = 100*1024^2) # allows larger file size import - do not adjust
+  options(shiny.maxRequestSize = 500*1024^2) # allows larger file size import - do not adjust
   
   # reactivate value to store data.table
   data = reactiveVal(NULL)
