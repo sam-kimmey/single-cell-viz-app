@@ -310,7 +310,7 @@ server = function(input, output, session) {
                   colnames(data()),
                   c("cell_label", "cell_ID", "roi_id", "sample_group1", "sample_group2", 
                     "cell_area", "slide_type", "mibi_instr", "roi_name", "roi_filename", 
-                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans")), 
+                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans", "slide_id")), 
                 selected = "centroid_X_um")
   })# X axis
     
@@ -323,7 +323,7 @@ server = function(input, output, session) {
                   colnames(data()),
                   c("cell_label", "cell_ID", "roi_id", "sample_group1", "sample_group2", 
                     "cell_area", "slide_type", "mibi_instr", "roi_name", "roi_filename", 
-                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans")), 
+                    "slide_roi_name", "geometry", "phenotype", "neigh_kmeans", "slide_id")), 
                 selected = "centroid_Y_um") 
   })# Y axis
 
@@ -332,7 +332,11 @@ server = function(input, output, session) {
     req(data())
     selectInput("column_color_top", 
                 "Select colors - Top Plot", 
-                choices = colnames(data()), 
+                choices = setdiff(
+                colnames(data()),
+                c("cell_label", "cell_ID", "roi_id", "sample_group1", "sample_group2", 
+                  "cell_area", "slide_type", "mibi_instr", "roi_name", "roi_filename", 
+                  "slide_roi_name", "geometry", "slide_id")), 
                 selected = "phenotype") 
   })# Color axis
 
@@ -368,7 +372,15 @@ server = function(input, output, session) {
     req(data())
     selectInput("column_color_bottom", 
                 "Select colors - Bottom Plot", 
-                choices = c("phenotype", "neigh_kmeans", "default"), 
+                choices = if ("phenotype" %in% data() && "neigh_kmeans" %in% data()) {
+                  c("phenotype", "neigh_kmeans", "default")
+                } else if (!("phenotype" %in% data()) && "neigh_kmeans" %in% data()) {
+                  c("neigh_kmeans", "default")
+                } else if ("phenotype" %in% data() && !("neigh_kmeans" %in% data())) {
+                  c("phenotype", "default")
+                } else {
+                  c("default")
+                },
                 selected = "default")
   })# Color axis
   
@@ -482,7 +494,7 @@ server = function(input, output, session) {
     }
   })# biaxial ggplot end
   
-  # Zoomable plot observation -------
+# Zoomable plot observation -------
   observeEvent(input$plot1_dblclick, {
     brush = input$plot1_brush
     if (!is.null(brush)) {
@@ -493,109 +505,128 @@ server = function(input, output, session) {
       ranges$y = NULL
     }
   })
-  
-  ### biaxial1 brush ---------------
-  brush = NULL # brush object
-  makeReactiveBinding("brush")
-  
-  observeEvent(input$plot1_brush, { # create reactive brush object
-    brush <<- input$plot1_brush
-  })
-  
-  ### Gate info button ---------------
-  observeEvent(input$gate_info_toggle, {
-    res <<- brushedPoints(data(), input$plot1_brush, allRows = T)$selected_
-  })# reset data to all true
-  
-  ### reset colored points button ---------------
-  # eliminates colored points
-  observeEvent(input$exclude_reset, {
-    session$resetBrush("plot1_brush")
-    # vals$keeprows = rep(TRUE, nrow(data()))
-    brush <<- NULL
-  })# Reset all points
-  
-  ### reset Anno button ---------------
-  # eliminates colored points
-  observeEvent(input$clear_all_anno, {
-    data()[,gateAnnotation:="NA"]
-    # https://mastering-shiny.org/action-graphics.html - visit this link to help with coding this button to
-    # remove annotation and update plot once that is done
-    brush <<- NULL
-  })# Reset all points
-  
-  ### Gate Name button ---------------
-  l = reactiveValues()
-  observeEvent(input$gate_name, {
-    # display a modal dialog with a header, textinput and action buttons
-    showModal(modalDialog(
-      tags$h2('Please enter gate name'),
-      textInput('gatename', 'Gate Name'),
-      footer=tagList(
-        actionButton('submit', 'Submit name'),
-        modalButton('cancel')
-      )
-    ))
-  })# gate name
 
-  # only store the information if the user clicks submit
-  observeEvent(input$submit, {
-    removeModal()
-    toname = brushedPoints(data(), input$plot1_brush, allRows = T)
-    print(table(toname$selected_))
-    l$name = input$gatename
-    print("length of named cells")
-    print(nrow(toname))
-    if(is.null(brush)){
-      print("no cells selected")
-    }else{
-      print("naming cells...")
-      print(l$name)
-      ObjIDs = toname[selected_ == TRUE,]$'cell_label'
-      print("length of selected cells:")
-      print(length(ObjIDs))
-      data()[data()$'cell_label' %in% ObjIDs, gateAnnotation:= l$name]
-      brush <= NULL
-    }
-  })
-  
-  ### displays selected cell info -----------
-  output$gateCoords = renderPrint({
-    req(data(), input$column_X, input$column_Y)
-    df = brushedPoints(data(), input$plot1_brush, allRows = FALSE)
+    ### biaxial1 brush ---------------
+    brush = NULL # brush object
+    makeReactiveBinding("brush")
 
-    cat("Total cells in gate:", nrow(df), "\n\n")
+    observeEvent(input$plot1_brush, { # create reactive brush object
+      brush <<- input$plot1_brush
+    })
 
-    # column name -> display label
-    summary_cols = c(
-      roi_id         = "Count of cells per ROI",
-      phenotype      = "Count of cell phenotypes",
-      neigh_kmeans   = "Count of cell neighborhoods",
-      sample_group1  = "Count of cells per Sample Grouping (1)",
-      sample_group2  = "Count of cells per Sample Grouping (2)"
-    )
+    ### reactive: data actually shown in plot1 (after ROI + overlay filtering) ---
+    curr_data_filtered <- reactive({
+      curr = data_roi_filter()
 
-    for (col in names(summary_cols)) {
-      if (col %in% colnames(data())) {
-        cat(summary_cols[[col]], ":\n", sep = "")
-        print(table(df[[col]]))
-        cat("\n")
+      if (!is.null(input$overlay_option) && input$overlay_option != "All") {
+        curr = curr |>
+          filter(.data[[input$column_color_top]] == input$overlay_option)
       }
-    }
-  }, width = 50)
+      curr
+    })
 
-  ### displays click data info -----------
-  output$clickCoords = renderPrint({
-    req(input$biax1_click, input$column_X, input$column_Y)
+    ### Gate info button ---------------
+    observeEvent(input$gate_info_toggle, {
+      res <<- brushedPoints(curr_data_filtered(), input$plot1_brush, allRows = TRUE)$selected_
+    })
 
-    x_name = input$column_X
-    y_name = input$column_Y
+    ### reset colored points button ---------------
+    # eliminates colored points
+    observeEvent(input$exclude_reset, {
+      session$resetBrush("plot1_brush")
+      brush <<- NULL
+    })
 
-    cat("Click coordinates for:\n")
-    cat(sprintf("  X (%s): %.2f\n", x_name, input$biax1_click$x))
-    cat(sprintf("  Y (%s): %.2f\n", y_name, input$biax1_click$y))
+    ### reset Anno button ---------------
+    # eliminates colored points, resets gateAnnotation to "NA" for all rows
+    observeEvent(input$clear_all_anno, {
+      curr_data = curr_data_filtered()
+      curr_data[, gateAnnotation := "NA"]
+      data(curr_data)          # <- re-assign to the reactiveVal so downstream reactives/outputs invalidate
+      session$resetBrush("plot1_brush")
+      brush <<- NULL
+    })
 
-  }, width = 50)
+    ### Gate Name button ---------------
+    l <- reactiveValues()
+
+    observeEvent(input$gate_name, {
+      showModal(modalDialog(
+        tags$h2('Please enter gate name'),
+        textInput('gatename', 'Gate Name'),
+        footer = tagList(
+          actionButton('submit', 'Submit name'),
+          modalButton('cancel')
+        )
+      ))
+    })
+
+    # only store the information if the user clicks submit
+    observeEvent(input$submit, {
+      removeModal()
+
+      toname <- brushedPoints(curr_data_filtered(), input$plot1_brush, allRows = TRUE)
+      print(table(toname$selected_))
+
+      l$name <- input$gatename
+      print("length of named cells")
+      print(nrow(toname))
+
+      if (is.null(brush)) {
+        print("no cells selected")
+      } else {
+        print("naming cells...")
+        print(l$name)
+
+        ObjIDs <- toname[selected_ == TRUE, ]$cell_label
+        print("length of selected cells:")
+        print(length(ObjIDs))
+
+        df <- data()
+        df[df$cell_label %in% ObjIDs, gateAnnotation := l$name]
+        data(df)          # <- re-assign so Shiny knows data() changed
+
+        brush <<- NULL     # fixed: was `brush <= NULL` (a no-op comparison)
+        session$resetBrush("plot1_brush")
+      }
+    })
+
+    ### displays selected cell info -----------
+    output$gateCoords = renderPrint({
+      req(data(), input$column_X, input$column_Y)
+      df = brushedPoints(curr_data_filtered(), input$plot1_brush, allRows = FALSE)
+
+      cat("Total cells in gate:", nrow(df), "\n\n")
+
+      summary_cols = c(
+        roi_id         = "Count of cells per ROI",
+        phenotype      = "Count of cell phenotypes",
+        neigh_kmeans   = "Count of cell neighborhoods",
+        sample_group1  = "Count of cells per Sample Grouping (1)",
+        sample_group2  = "Count of cells per Sample Grouping (2)"
+      )
+
+      for (col in names(summary_cols)) {
+        if (col %in% colnames(curr_data_filtered())) {
+          cat(summary_cols[[col]], ":\n", sep = "")
+          print(table(df[[col]]))
+          cat("\n")
+        }
+      }
+    }, width = 50)
+
+    ### displays click data info -----------
+    output$clickCoords = renderPrint({
+      req(input$biax1_click, input$column_X, input$column_Y)
+
+      x_name = input$column_X
+      y_name = input$column_Y
+
+      cat("Click coordinates for:\n")
+      cat(sprintf("  X (%s): %.2f\n", x_name, input$biax1_click$x))
+      cat(sprintf("  Y (%s): %.2f\n", y_name, input$biax1_click$y))
+
+    }, width = 50)
     
     output$biAxial2 = renderPlot({
       req(data(), input$column_color_bottom)
